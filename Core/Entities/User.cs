@@ -20,8 +20,10 @@ namespace Core.Entities
         public string? LastName { get; set; }
         [Required]
         public string Email { get; set; }
+        public ICollection<Tag> UserTags { get; set; }
+            = new List<Tag>();
 
-        
+
         public User()
         {
         }

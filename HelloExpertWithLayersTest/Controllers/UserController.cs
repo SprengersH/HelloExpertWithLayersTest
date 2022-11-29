@@ -4,6 +4,8 @@ using Core.Entities;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+
 
 namespace Presentation.Controllers
 {
@@ -14,6 +16,7 @@ namespace Presentation.Controllers
 
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private const int maxUserPageSize = 20;
 
         public UserController(IUserRepository userRepository, IMapper mapper)
         {
@@ -24,11 +27,23 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserWithoutTagsDto>>> GetUsers(string? name, string? searchQuery, int pageNumber = 1, int pageSize = 10)
         {
-            var users = await _userRepository.GetUsersAsync();
+            if (pageSize > maxUserPageSize)
+            {
+                pageSize = maxUserPageSize;
+            }
+            //var users = await _userRepository.GetUsersAsync();
 
-            return Ok((users));
+            //return Ok((users));
+
+            var (userEntities, paginationMetadata) = await _userRepository
+                .GetUsersAsync(name, searchQuery, pageNumber, pageSize);
+
+            Response.Headers.Add("X-Pagination",
+                JsonSerializer.Serialize(paginationMetadata));
+
+            return Ok(_mapper.Map<IEnumerable<UserWithoutTagsDto>>(userEntities));
         }
 
         //[HttpPost]

@@ -13,7 +13,7 @@ namespace Application.Profiles
     {
         public UserProfile()
         {
-            CreateMap<User, UserDto>();
+            CreateMap<User, UserWithoutTagsDto>();
             CreateMap<UserForCreationDto, User>();
             CreateMap<UserForUpdateDto, User>();
             CreateMap<User, UserForUpdateDto>();
