@@ -11,4 +11,5 @@ public interface IUserRepository
         string? name, string? searchQuery, int pageNumber, int pageSize);
     Task<User> GetUserAsync(int id);
     Task AddUser(User user);
+    Task<bool> SaveChangesAsync();
 }

@@ -31,6 +31,7 @@ namespace Infrastructure.Repositories
             return await _dbContext.Users.OrderBy(u => u.FirstName).ToListAsync();
         }
 
+
         public async Task<(IEnumerable<User>, PaginationMetadata)> GetUsersAsync(string? name, string? searchQuery, int pageNumber, int pageSize)
         {
             var collection = _dbContext.Users as IQueryable<User>;
@@ -41,7 +42,14 @@ namespace Infrastructure.Repositories
                 collection = collection.Where(c => c.FirstName == name);
             }
 
-            
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                searchQuery = searchQuery.Trim();
+                collection = collection.Where(a => a.FirstName.Contains(searchQuery)
+                                                   || (a.LastName.Contains(searchQuery) || a.Email.Contains(searchQuery)));
+            }
+
+
             var totalItemCount = await collection.CountAsync();
 
             var paginationMetadata = new PaginationMetadata(
@@ -54,6 +62,10 @@ namespace Infrastructure.Repositories
 
             return (collectionToReturn, paginationMetadata);
         }
+        public async Task<User> GetUserAsync(int id)
+        {
+            return await _dbContext.Users.FindAsync(id);
+        }
 
         public async Task AddUser(User user)
         {
@@ -61,11 +73,13 @@ namespace Infrastructure.Repositories
            await _dbContext.SaveChangesAsync(); // dont forget this if you dont want to lose another day
            
         }
-        
-        public async Task<User> GetUserAsync(int id)
+
+        public async Task<bool> SaveChangesAsync()
         {
-            return await _dbContext.Users.FindAsync(id);
+            return (await _dbContext.SaveChangesAsync() >= 0);
         }
+
+        
 
     }
 }
