@@ -22,6 +22,7 @@ namespace Presentation.Controllers
         {
             _userRepository = userRepository ??
                               throw new ArgumentNullException(nameof(userRepository));
+
             _mapper = mapper ??
                       throw new ArgumentNullException(nameof(mapper));
         }
@@ -34,18 +35,16 @@ namespace Presentation.Controllers
                 pageSize = maxUserPageSize;
             }
             
-            var (userEntities, paginationMetadata) = await _userRepository
-                .GetUsersAsync(name, searchQuery, pageNumber, pageSize);
+            var (userEntities, paginationMetadata) = await _userRepository.GetUsersAsync(name, searchQuery, pageNumber, pageSize);
 
-            Response.Headers.Add("X-Pagination",
-                JsonSerializer.Serialize(paginationMetadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
             return Ok(_mapper.Map<IEnumerable<UserWithoutTagsDto>>(userEntities));
         }
 
         
         [HttpPost]
-        public async Task<ActionResult<UserForCreationDto>> AddUserWithDto(UserForCreationDto user)
+        public async Task<ActionResult<UserDto>> AddUserWithDto(UserForCreationDto user)
         {
             var finalUser = _mapper.Map<User>(user);
             await _userRepository.AddUser(finalUser);
@@ -72,18 +71,5 @@ namespace Presentation.Controllers
             return Ok(user);
         }
 
-        //[HttpGet("{id}", Name = "GetUserWithTags")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<ActionResult<User>> GetUserWithTags(int id)
-        //{
-        //    var user = await _userRepository.GetUserAsync(id, true);
-        //    if (user == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(user);
-        //}
     }
 }
