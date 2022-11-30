@@ -64,19 +64,19 @@ namespace Infrastructure.Repositories
         }
         public async Task<User> GetUserAsync(int id)
         {
-            return await _dbContext.Users.FindAsync(id);
+            return (await _dbContext.Users.FindAsync(id))!;
         }
 
         public async Task AddUser(User user)
         {
             _dbContext.Add(user);
-           await _dbContext.SaveChangesAsync(); // dont forget this if you dont want to lose another day
+           await SaveChangesAsync(); // dont forget this if you dont want to lose another day
            
         }
 
         public async Task<bool> SaveChangesAsync()
         {
-            return (await _dbContext.SaveChangesAsync() >= 0);
+            return await _dbContext.SaveChangesAsync() >= 0;
         }
 
         

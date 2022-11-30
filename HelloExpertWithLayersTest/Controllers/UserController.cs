@@ -9,8 +9,8 @@ using System.Text.Json;
 
 namespace Presentation.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class UserController : ControllerBase
     {
 
@@ -33,10 +33,7 @@ namespace Presentation.Controllers
             {
                 pageSize = maxUserPageSize;
             }
-            //var users = await _userRepository.GetUsersAsync();
-
-            //return Ok((users));
-
+            
             var (userEntities, paginationMetadata) = await _userRepository
                 .GetUsersAsync(name, searchQuery, pageNumber, pageSize);
 
@@ -45,13 +42,7 @@ namespace Presentation.Controllers
 
             return Ok(_mapper.Map<IEnumerable<UserWithoutTagsDto>>(userEntities));
         }
-
-        //[HttpPost]
-        //public async Task AddUser(User user)
-        //{
-        //    await _userRepository.AddUser(user);
-        //}
-
+        
         [HttpPost]
         public async Task<ActionResult<UserForCreationDto>> AddUserWithDto(UserForCreationDto user)
         {
