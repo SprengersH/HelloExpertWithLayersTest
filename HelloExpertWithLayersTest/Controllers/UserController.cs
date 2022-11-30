@@ -42,6 +42,7 @@ namespace Presentation.Controllers
 
             return Ok(_mapper.Map<IEnumerable<UserWithoutTagsDto>>(userEntities));
         }
+
         
         [HttpPost]
         public async Task<ActionResult<UserForCreationDto>> AddUserWithDto(UserForCreationDto user)
@@ -61,14 +62,28 @@ namespace Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<User>> GetUser(int id, bool includeTags)
         {
-            var user = await _userRepository.GetUserAsync(id);
+            var user = await _userRepository.GetUserAsync(id, includeTags);
             if (user == null)
             {
                 return NotFound();
             }
             return Ok(user);
         }
+
+        //[HttpGet("{id}", Name = "GetUserWithTags")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //public async Task<ActionResult<User>> GetUserWithTags(int id)
+        //{
+        //    var user = await _userRepository.GetUserAsync(id, true);
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(user);
+        //}
     }
 }

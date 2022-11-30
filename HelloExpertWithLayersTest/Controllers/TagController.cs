@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Core.Entities;
 using Infrastructure.Data;
+using AutoMapper;
+using Infrastructure.Repositories;
 
 namespace Presentation.Controllers
 {
@@ -10,10 +13,16 @@ namespace Presentation.Controllers
     public class TagController : ControllerBase
     {
         private readonly UserDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IUserRepository _userRepository;
 
-        public TagController(UserDbContext context)
+        public TagController(UserDbContext context, IMapper mapper, IUserRepository userRepository)
         {
             _context = context;
+            _mapper = mapper ??
+                      throw new ArgumentNullException(nameof(mapper));
+            _userRepository = userRepository ??
+                              throw new ArgumentNullException(nameof(userRepository));
         }
 
         // GET: api/Tags
@@ -76,6 +85,42 @@ namespace Presentation.Controllers
 
             return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
         }
+
+
+
+        [HttpPost("AddUserTag", Name = "AddUserTag")]
+        public async Task<ActionResult<TagDto>> AddTagToUser(int userId, TagForCreationDto tag)
+        {
+            if (!await _context.Users.AnyAsync(u => u.Id == userId))
+            {
+                return NotFound();
+            }
+
+            var finalTag = _mapper.Map<Tag>(tag);
+
+            var user = await _userRepository.GetUserAsync(userId, false);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.UserTags.Add(finalTag);
+
+            await _context.SaveChangesAsync();
+
+            var createdTagToReturn =
+                _mapper.Map<TagDto>(finalTag);
+
+            return CreatedAtRoute("AddUserTag",
+                new
+                {
+                    userId = userId,
+                    tagId = createdTagToReturn.Id
+                },
+                createdTagToReturn);
+        }
+
+
+
 
         // DELETE: api/Tags/5
         [HttpDelete("{id}")]

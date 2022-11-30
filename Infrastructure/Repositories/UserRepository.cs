@@ -13,28 +13,28 @@ namespace Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly UserDbContext _dbContext;
+        private readonly UserDbContext _context;
 
         public UserRepository(UserDbContext dbContext)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public IEnumerable<User> AllUsers()
 
         {
-            return _dbContext.Users;
+            return _context.Users;
         }
 
         public async Task<IEnumerable<User>> GetUsersAsync()
         {
-            return await _dbContext.Users.OrderBy(u => u.FirstName).ToListAsync();
+            return await _context.Users.OrderBy(u => u.FirstName).ToListAsync();
         }
 
 
         public async Task<(IEnumerable<User>, PaginationMetadata)> GetUsersAsync(string? name, string? searchQuery, int pageNumber, int pageSize)
         {
-            var collection = _dbContext.Users as IQueryable<User>;
+            var collection = _context.Users as IQueryable<User>;
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -64,19 +64,31 @@ namespace Infrastructure.Repositories
         }
         public async Task<User> GetUserAsync(int id)
         {
-            return (await _dbContext.Users.FindAsync(id))!;
+            return (await _context.Users.FindAsync(id))!;
+        }
+
+        public async Task<User?> GetUserAsync(int id, bool includeTags)
+        {
+            if (includeTags)
+            {
+                return await _context.Users.Include(c => c.UserTags)
+                    .Where(c => c.Id == id).FirstOrDefaultAsync();
+            }
+
+            return await _context.Users
+                .Where(c => c.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task AddUser(User user)
         {
-            _dbContext.Add(user);
+            _context.Add(user);
            await SaveChangesAsync(); // dont forget this if you dont want to lose another day
            
         }
 
         public async Task<bool> SaveChangesAsync()
         {
-            return await _dbContext.SaveChangesAsync() >= 0;
+            return await _context.SaveChangesAsync() >= 0;
         }
 
         
